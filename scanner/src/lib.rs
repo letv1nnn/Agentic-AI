@@ -279,7 +279,11 @@ mod tests {
 
         let number_token = scanner.scan_token();
         assert_eq!(number_token.token_type, TokenType::Number);
+
+        let right_paren_token = scanner.scan_token();
+        assert_eq!(right_paren_token.token_type, TokenType::RightParen);
     }
+
     #[test]
     fn test_for_loop() {
         let source = String::from("for (var i = 0; i < 10; i = i + 1) {\n\tprint(i)\n}");
