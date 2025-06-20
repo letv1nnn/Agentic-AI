@@ -69,3 +69,42 @@ pub fn distribute_args(args: Vec<String>) -> Result<(String, String), &'static s
         ),
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_distribute_args() {
+        let args = vec![
+            "program".to_string(),
+            "pattern".to_string(),
+            "file.txt".to_string()
+        ];
+        assert!(distribute_args(args).is_ok());
+
+        let args = vec!["program".to_string()];
+        assert!(distribute_args(args).is_err());
+    }
+
+    #[test]
+    fn test_stream_editor() {
+        let test_sed = Sed {
+            oldstring: "old".to_string(),
+            newstring: "new".to_string(),
+            flag: "g".to_string(),
+            file: "test.txt".to_string(),
+        };
+
+        let content = "old text old".to_string();
+        let result = stream_editor(&content, &test_sed);
+        assert_eq!(result, "new text new");
+
+        let test_sed_single = Sed {
+            flag: "1".to_string(),
+            ..test_sed
+        };
+        let result = stream_editor(&content, &test_sed_single);
+        assert_eq!(result, "new text old");
+    }
+}
