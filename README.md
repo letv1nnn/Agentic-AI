@@ -1,4 +1,4 @@
-# Rust_Mini_Projects
+# Rust CLI projects
 This repository includes a collection of Rust programs created to practice and explore the language.
 
 ## Projects
