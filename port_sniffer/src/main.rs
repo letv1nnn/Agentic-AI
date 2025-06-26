@@ -28,23 +28,25 @@ fn main() {
 
     let num_threads: u16 = arguments.threads;
     let (tx, rx) = channel();
-    for i in 0..num_threads{
+    let mut handles = vec![];
+    for i in 0..num_threads {
         let tx = tx.clone();
-        thread::spawn(move || {
+        let handle = thread::spawn(move || {
             scan(tx, i, arguments.ipaddr, num_threads);
         });
+        handles.push(handle);
     }
 
-    let mut out = vec![];
     drop(tx);
-    for p in rx {
-        out.push(p);
+
+    for handle in handles {
+        handle.join().unwrap();
     }
 
-    println!("");
+    let mut out: Vec<u16> = rx.iter().collect();
     out.sort();
-
-    for v in out {
-        println!("{} is open", v);
+    println!("\nOpen ports:");
+    for port in out {
+        println!("{}", port);
     }
 }

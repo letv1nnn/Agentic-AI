@@ -48,17 +48,14 @@ impl Arguments {
 
 pub fn scan(tx: Sender<u16>, start_point: u16, ipaddr: IpAddr, num_threads: u16) {
     let mut port = start_point + 1;
-    loop {
+    while port <= MAX_PROTS {
         match TcpStream::connect((ipaddr, port)) {
             Ok(_) => {
                 print!(".");
                 io::stdout().flush().unwrap();
                 tx.send(port).unwrap(); 
             },
-            Err(_) => {}
-        }
-        if (MAX_PROTS - port )<= num_threads {
-            break;
+            Err(_) => {},
         }
         port += num_threads;
     }
