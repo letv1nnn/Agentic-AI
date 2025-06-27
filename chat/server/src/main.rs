@@ -2,6 +2,7 @@ use std::io::{Write, Read, ErrorKind};
 use std::net::TcpListener;
 use std::sync::mpsc;
 use std::thread;
+use std::process;
 
 const LOCAL: &str = "127.0.0.1:6000";
 const MSG_SIZE: usize = 32;
@@ -38,7 +39,7 @@ fn main() {
                         Err(ref err) if err.kind() == ErrorKind::WouldBlock => (),
                         Err(_) => {
                             println!("Closing connection with {}.", addr);
-                            break;
+                            process::exit(1);
                         }
                     }
                     sleep();
