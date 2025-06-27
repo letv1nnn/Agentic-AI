@@ -2,6 +2,7 @@
 This repository includes a collection of Rust programs created to practice and explore the language.
 
 ## Projects
+- [CHAT](https://github.com/letv1nnn/CLI-projects/tree/main/chat) A simple Rust-based TCP chat application with a non-blocking server that handles multiple clients and message broadcasting.
 - [PORT SNIFFER](https://github.com/letv1nnn/CLI-projects/tree/main/port_sniffer) A lightweight, multi-threaded port scanner.
 - [GREP](https://github.com/letv1nnn/CLI-projects/tree/main/grep) is an implementation of the *grep* command using Bash scripting.
 - [SCANNER](https://github.com/letv1nnn/CLI-projects/tree/main/scanner) is a code scanner for a self-created programming language. It returns tokens that can be used by a parser.
