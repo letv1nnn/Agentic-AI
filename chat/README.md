@@ -25,3 +25,5 @@ A simple TCP-based chat application implemented in Rust, demonstrating non-block
 2. Start the client:
    ```bash
    cargo run client
+![image](https://github.com/user-attachments/assets/99425682-5be8-427b-9726-a21bc242d4de)
+
