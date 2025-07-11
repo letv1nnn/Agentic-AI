@@ -1,0 +1,9 @@
+[package]
+name = "ollama_config"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+reqwest = { version = "*", features = ["json"] }
+serde = { version = "*", features = ["derive"] }
+serde_json = { version = "*"}
