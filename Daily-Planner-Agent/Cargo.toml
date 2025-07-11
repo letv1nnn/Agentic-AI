@@ -1,0 +1,11 @@
+
+[workspace]
+resolver = "3"
+members = [
+    "agent_core",
+    "agent_run",
+    "ollama_config",
+]
+
+[workspace.dependencies]
+tokio = { version = "*", features = ["full"] }
