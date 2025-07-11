@@ -32,7 +32,7 @@ The agent uses a local large language model (LLM) through [Ollama](https://ollam
 
 1. **Clone the repo**
    ```bash
-   git clone https://github.com/your-username/daily-planner-agent.git
+   git clone https://github.com/letv1nnn/Agentic-AI-with-Rust.git
    cd daily-planner-agent
    ```
 2. **Build**
