@@ -6,4 +6,4 @@ This directory containts the **Agentic AI Architecture Stack** for the future le
 
 ## Branches
 - [Core Architecture](https://github.com/letv1nnn/Agentic-AI-with-Rust/tree/main/agentic_ai_architecture/core_architecture) - core architecture of Agentic AI: "Agent Traits and Behavior Models", "Event-driven Design Patterns" and "Task Execution, Tool Invocation and Error Handling".
-- [Tool-Using]() - ...
+- [Tool-Using](https://github.com/letv1nnn/Agentic-AI-with-Rust/tree/main/agentic_ai_architecture/tool-using) - tool-using agents: "Registering Secure Tool Functions", "Executing System-level Commands with Safety", "Chaining Tool Use Based on Goals".
