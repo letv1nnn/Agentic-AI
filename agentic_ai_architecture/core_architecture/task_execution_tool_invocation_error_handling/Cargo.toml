@@ -4,3 +4,4 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+agent_beh_mod = { path = "../agent_traits_and_behavior_models"}
