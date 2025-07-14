@@ -21,7 +21,7 @@ pub struct ChatResponse {
     pub done: bool,
 }
 
-pub async fn send_request(prompt: &str) -> Result<String,  Box<dyn StdError>> {
+pub async fn send_request<T>(prompt: &str) -> Result<String, Box<dyn StdError>> {
     let client = Client::new();
 
     let messages = vec![
@@ -48,5 +48,17 @@ pub async fn send_request(prompt: &str) -> Result<String,  Box<dyn StdError>> {
     }
     // I need to the respoonse be a shell command that is to be executed.
 
-    Ok("Succeeded".to_string())
+    let body = response_result.text().await?;
+
+    let mut commands = String::new();
+
+    for line in body.lines() {
+        if let Ok(chunk) = serde_json::from_str::<ChatResponse>(line) {
+            if let Some(msg) = chunk.message {
+                commands.push_str(&msg.content);
+            }
+        }
+    }
+    
+    Ok(commands)
 }
