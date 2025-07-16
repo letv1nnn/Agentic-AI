@@ -1,1 +1,0 @@
-fn(_) -> Result<Metadata, std::io::Error> {std::fs::metadata::<_>}
