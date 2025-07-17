@@ -26,7 +26,7 @@ pub struct FileMetadata {
     pub extension: Option<String>,
 }
 
-pub fn get_file_metadata(path: &PathBuf) -> Option<FileMetadata> {
+pub async fn get_file_metadata(path: &PathBuf) -> Option<FileMetadata> {
     if let Ok(metadata) = fs::metadata(&path) {
         let modified = metadata.modified().ok().and_then(|time| {
             time.elapsed().ok()
@@ -44,7 +44,7 @@ pub fn get_file_metadata(path: &PathBuf) -> Option<FileMetadata> {
 }
 
 // Designing File Routing Rules
-pub fn route_file(file: &FileMetadata) -> Option<PathBuf> {
+pub async fn route_file(file: &FileMetadata) -> Option<PathBuf> {
     match file.extension.as_deref() {
         Some("txt") => Some(PathBuf::from("TextFiles")),
         Some("jpg") | Some("png") => Some(PathBuf::from("Images")),
@@ -110,14 +110,13 @@ pub async fn find_large_files(base_dir: &str, min_size_mb: u64) -> Vec<FileMetad
 
     for entry in WalkDir::new(base_dir).into_iter().filter_map(|e| e.ok()) {
         if entry.file_type().is_file() {
-            if let Some(metadata) = get_file_metadata(&entry.into_path()) {
+            if let Some(metadata) = get_file_metadata(&entry.into_path()).await {
                 if metadata.size >= min_size {
                     large_files.push(metadata);
                 }
             }
         }
     }
-
     large_files
 }
 

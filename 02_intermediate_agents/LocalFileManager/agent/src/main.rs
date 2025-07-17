@@ -62,9 +62,9 @@ pub async fn take_input() {
                 match output.status {
                     agent_core::AgentOutputStatus::Success => {
                         if let Some(msg) = output.message {
-                            // println!("Success: {}", msg);
+                            println!("Success: {}", msg);
                         } else {
-                            // println!("Operation completed successfully");
+                            println!("Operation completed successfully");
                         }
                     },
                     agent_core::AgentOutputStatus::Failure(err) => {

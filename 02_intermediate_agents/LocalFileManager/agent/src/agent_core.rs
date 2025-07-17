@@ -69,7 +69,7 @@ impl LocalFileManagerAgent {
             }
             "get_file_metadata" => {
                 if let Some(path) = action.parameters.get("path") {
-                    match get_file_metadata(PathBuf::from(path)) {
+                    match get_file_metadata(&PathBuf::from(path)).await {
                         Some(metadata) => AgentOutput {
                             status: AgentOutputStatus::Success,
                             message: Some(format!("File metadata: {:?}", metadata)),
@@ -88,9 +88,12 @@ impl LocalFileManagerAgent {
             }
             "route_file" => {
                 if let Some(file_path) = action.parameters.get("file_path") {
-                    match get_file_metadata(PathBuf::from(file_path)) {
+                    match get_file_metadata(&PathBuf::from(file_path)).await {
                         Some(metadata) => {
-                            let target_dir = route_file(&metadata).await;
+                            let target_dir = route_file(&metadata).await.unwrap_or_else(|| {
+                                error!("No routing rule found for file: {}", file_path);
+                                PathBuf::from("Uncategorized")
+                            });
                             match move_file(&metadata, &target_dir).await {
                                 Ok(_) => AgentOutput {
                                     status: AgentOutputStatus::Success,
@@ -117,7 +120,7 @@ impl LocalFileManagerAgent {
             "move_file" => {
                 if let Some(path) = action.parameters.get("path") {
                     if let Some(target_dir) = action.parameters.get("target_dir") {
-                        match get_file_metadata(PathBuf::from(path)) {
+                        match get_file_metadata(&PathBuf::from(path)).await {
                             Some(metadata) => {
                                 match move_file(&metadata, &PathBuf::from(target_dir)).await {
                                     Ok(_) => AgentOutput {
@@ -144,6 +147,55 @@ impl LocalFileManagerAgent {
                 } else {
                     AgentOutput {
                         status: AgentOutputStatus::Failure("Missing path parameter".to_string()),
+                        message: None,
+                    }
+                }
+            }
+            "find_files_by_extension" => {
+                if let Some(base_dir) = action.parameters.get("base_dir") {
+                    if let Some(extension) = action.parameters.get("extension") {
+                        let files = tools::find_files_by_extension(base_dir, extension).await;
+                        AgentOutput {
+                            status: AgentOutputStatus::Success,
+                            message: Some(format!("Found {} files with extension '{}'", files.len(), extension)),
+                        }
+                    } else {
+                        AgentOutput {
+                            status: AgentOutputStatus::Failure("Missing extension parameter".to_string()),
+                            message: None,
+                        }
+                    }
+                } else {
+                    AgentOutput {
+                        status: AgentOutputStatus::Failure("Missing base_dir parameter".to_string()),
+                        message: None,
+                    }
+                }
+            }
+            "find_large_files" => {
+                if let Some(base_dir) = action.parameters.get("base_dir") {
+                    if let Some(min_size_str) = action.parameters.get("min_size") {
+                        if let Ok(min_size) = min_size_str.parse::<u64>() {
+                            let large_files = tools::find_large_files(base_dir, min_size).await;
+                            AgentOutput {
+                                status: AgentOutputStatus::Success,
+                                message: Some(format!("Found {} files larger than {} MB", large_files.len(), min_size)),
+                            }
+                        } else {
+                            AgentOutput {
+                                status: AgentOutputStatus::Failure("Invalid min_size parameter".to_string()),
+                                message: None,
+                            }
+                        }
+                    } else {
+                        AgentOutput {
+                            status: AgentOutputStatus::Failure("Missing min_size parameter".to_string()),
+                            message: None,
+                        }
+                    }
+                } else {
+                    AgentOutput {
+                        status: AgentOutputStatus::Failure("Missing base_dir parameter".to_string()),
                         message: None,
                     }
                 }

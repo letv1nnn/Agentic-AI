@@ -43,10 +43,12 @@ pub async fn send_request(prompt: &str) -> Result<String, Box<dyn StdError>> {
 
     Available functions:
     - collect_files(base_dir: str) -> List files in directory, only files, not directories, in other cases call execute_command
-    - get_file_metadata(path: str) -> Get file details
+    - get_file_metadata(path: str) -> Get file details or metadata or information about the file
     - route_file(file: FileMetadata) -> Determine where file should go
     - move_file(metadata: FileMetadata, target_dir: str) -> Move file
     - execute_command(command: str) -> Execute shell command
+    - find_files_by_extension(base_dir: str, extension: str) -> Find files by extension
+    - find_large_files(base_dir: str, min_size: u64) -> Find large files
 
     For file operations, always use absolute paths.
     "#;
