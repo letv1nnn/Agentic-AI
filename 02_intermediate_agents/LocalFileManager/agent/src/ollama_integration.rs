@@ -42,7 +42,7 @@ pub async fn send_request(prompt: &str) -> Result<String, Box<dyn StdError>> {
     }
 
     Available functions:
-    - collect_files(base_dir: str) -> List files in directory
+    - collect_files(base_dir: str) -> List files in directory, only files, not directories, in other cases call execute_command
     - get_file_metadata(path: str) -> Get file details
     - route_file(file: FileMetadata) -> Determine where file should go
     - move_file(metadata: FileMetadata, target_dir: str) -> Move file

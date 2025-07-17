@@ -67,6 +67,87 @@ impl LocalFileManagerAgent {
                     }
                 }
             }
+            "get_file_metadata" => {
+                if let Some(path) = action.parameters.get("path") {
+                    match get_file_metadata(PathBuf::from(path)) {
+                        Some(metadata) => AgentOutput {
+                            status: AgentOutputStatus::Success,
+                            message: Some(format!("File metadata: {:?}", metadata)),
+                        },
+                        None => AgentOutput {
+                            status: AgentOutputStatus::Failure("File not found".to_string()),
+                            message: None,
+                        },
+                    }
+                } else {
+                    AgentOutput {
+                        status: AgentOutputStatus::Failure("Missing path parameter".to_string()),
+                        message: None,
+                    }
+                }
+            }
+            "route_file" => {
+                if let Some(file_path) = action.parameters.get("file_path") {
+                    match get_file_metadata(PathBuf::from(file_path)) {
+                        Some(metadata) => {
+                            let target_dir = route_file(&metadata).await;
+                            match move_file(&metadata, &target_dir).await {
+                                Ok(_) => AgentOutput {
+                                    status: AgentOutputStatus::Success,
+                                    message: Some(format!("File routed to {}", target_dir.display())),
+                                },
+                                Err(e) => AgentOutput {
+                                    status: AgentOutputStatus::Failure(e.to_string()),
+                                    message: None,
+                                },
+                            }
+                        }
+                        None => AgentOutput {
+                            status: AgentOutputStatus::Failure("File not found".to_string()),
+                            message: None,
+                        },
+                    }
+                } else {
+                    AgentOutput {
+                        status: AgentOutputStatus::Failure("Missing file_path parameter".to_string()),
+                        message: None,
+                    }
+                }
+            }
+            "move_file" => {
+                if let Some(path) = action.parameters.get("path") {
+                    if let Some(target_dir) = action.parameters.get("target_dir") {
+                        match get_file_metadata(PathBuf::from(path)) {
+                            Some(metadata) => {
+                                match move_file(&metadata, &PathBuf::from(target_dir)).await {
+                                    Ok(_) => AgentOutput {
+                                        status: AgentOutputStatus::Success,
+                                        message: Some(format!("File moved to {}", target_dir)),
+                                    },
+                                    Err(e) => AgentOutput {
+                                        status: AgentOutputStatus::Failure(e.to_string()),
+                                        message: None,
+                                    },
+                                }
+                            }
+                            None => AgentOutput {
+                                status: AgentOutputStatus::Failure("File not found".to_string()),
+                                message: None,
+                            },
+                        }
+                    } else {
+                        AgentOutput {
+                            status: AgentOutputStatus::Failure("Missing target_dir parameter".to_string()),
+                            message: None,
+                        }
+                    }
+                } else {
+                    AgentOutput {
+                        status: AgentOutputStatus::Failure("Missing path parameter".to_string()),
+                        message: None,
+                    }
+                }
+            }
             "execute_command" => {
                 if let Some(command) = action.parameters.get("command") {
                     match execute_command(command).await {
