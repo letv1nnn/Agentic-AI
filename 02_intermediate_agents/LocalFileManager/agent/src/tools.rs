@@ -71,20 +71,57 @@ pub async fn move_file(metadata: &FileMetadata, target_dir: &PathBuf) -> io::Res
     if dest_path.exists() {
         let new_name = format!("{}_{}", Utc::now().timestamp(), file_name.to_string_lossy());
         let new_dest_path = target_dir.join(new_name);
-        fs::rename(&metadata.path, &new_dest_path)
+        fs::rename(&metadata.path, &new_dest_path);
+        // Log every move
+        tracing::info!(
+            "File moved successfully from '{}' to '{}'",
+            metadata.path.to_string_lossy(),
+            dest_path.to_string_lossy()
+        );
+
     } else {
-        fs::rename(&metadata.path, &dest_path)
+        fs::rename(&metadata.path, &dest_path);
+        tracing::info!(
+            "File moved successfully from '{}' to '{}'",
+            metadata.path.to_string_lossy(),
+            dest_path.to_string_lossy()
+        );
     }
+
+    Ok(())
 }
 
-/*
-// Log every move
-tracing::info!(
-    from = metadata.path.to_string_lossy(),
-    to = dest_path.to_string_lossy(),
-    "File moved successfully"
-);
-*/
+pub async fn find_files_by_extension(base_dir: &str, extension: &str) -> Vec<PathBuf> {
+    WalkDir::new(base_dir)
+        .into_iter()
+        .filter_map(|entry| entry.ok())
+        .filter(|entry| {
+            entry.file_type().is_file() &&
+            entry.path().extension()
+                .and_then(|ext| ext.to_str())
+                .map(|ext| ext.eq_ignore_ascii_case(extension))
+                .unwrap_or(false)
+        })
+        .map(|entry| entry.into_path())
+        .collect()
+}
+
+pub async fn find_large_files(base_dir: &str, min_size_mb: u64) -> Vec<FileMetadata> {
+    let mut large_files = Vec::new();
+    let min_size = min_size_mb * 1024 * 1024;
+
+    for entry in WalkDir::new(base_dir).into_iter().filter_map(|e| e.ok()) {
+        if entry.file_type().is_file() {
+            if let Some(metadata) = get_file_metadata(&entry.into_path()) {
+                if metadata.size >= min_size {
+                    large_files.push(metadata);
+                }
+            }
+        }
+    }
+
+    large_files
+}
 
 // Auditable Logging
 // this ensutres is recorded with timestamp and content. output can
