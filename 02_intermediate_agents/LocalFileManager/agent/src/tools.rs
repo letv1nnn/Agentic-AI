@@ -6,8 +6,6 @@ use std::io;
 use tracing_subscriber::FmtSubscriber;
 
 
-// Tool functions for the Local File Manager Agent
-
 // Directory scanning and file Discovery
 pub async fn collect_files(base_dir: &str) -> Vec<PathBuf> {
     WalkDir::new(base_dir)

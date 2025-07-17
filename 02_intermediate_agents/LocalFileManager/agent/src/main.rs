@@ -38,6 +38,7 @@ pub async fn take_input() {
                 break;
             },
             "-query" | "-q" => {
+                // Prompt for query input
                 let mut query = String::new();
                 println!("Enter your query:");
                 std::io::stdin().read_line(&mut query).expect("Failed to read query");
@@ -49,18 +50,21 @@ pub async fn take_input() {
 
                 println!("Processing query: {}...", query.trim());
 
+                // Create agent input
                 let agent_input = agent_core::AgentInput {
                     query: query.trim().to_string(),
                 };
 
+                // Handle the input using the agentq
                 let output = agent.handle_input(agent_input).await;
 
+                // handle the result
                 match output.status {
                     agent_core::AgentOutputStatus::Success => {
                         if let Some(msg) = output.message {
-                            println!("Success: {}", msg);
+                            // println!("Success: {}", msg);
                         } else {
-                            println!("Operation completed successfully");
+                            // println!("Operation completed successfully");
                         }
                     },
                     agent_core::AgentOutputStatus::Failure(err) => {

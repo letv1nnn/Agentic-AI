@@ -80,16 +80,26 @@ pub async fn send_request(prompt: &str) -> Result<String, Box<dyn StdError>> {
 
     let body = response_result.text().await?;
 
-    Ok(body)
+    let mut response = String::new();
+    for line in body.lines() {
+        if let Ok(chat_response) = serde_json::from_str::<ChatResponse>(line) {
+            if let Some(message) = chat_response.message {
+                response.push_str(&message.content);
+            }
+        }  
+    }
+
+    Ok(response)
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct ActionResponse {
     pub action: String,
     pub parameters: HashMap<String, String>,
     pub explanation: Option<String>,
 }
 
+// return the formatted to rust struct
 pub async fn ollama_input_config(prompt: &String) -> Result<ActionResponse, Box<dyn StdError>> {
     let full_prompt = format!("User Query: {}", prompt);
     let response = send_request(&full_prompt).await?;
@@ -99,7 +109,7 @@ pub async fn ollama_input_config(prompt: &String) -> Result<ActionResponse, Box<
     Ok(action_response)
 }
 
-pub fn execute_command(command: &str) -> Result<String, Box<dyn StdError>> {
+pub async fn execute_command(command: &str) -> Result<String, Box<dyn StdError>> {
     let output = if cfg!(target_os = "windows") {
         Command::new("cmd")
             .args(["/C", command])
