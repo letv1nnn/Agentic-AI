@@ -4,7 +4,7 @@ use std::fs::{self, metadata};
 use chrono::{DateTime, Utc, Duration};
 use std::io;
 use tracing_subscriber::FmtSubscriber;
-
+use walkdir::DirEntry;
 
 // Directory scanning and file Discovery
 pub async fn collect_files(base_dir: &str) -> Vec<PathBuf> {
@@ -15,7 +15,6 @@ pub async fn collect_files(base_dir: &str) -> Vec<PathBuf> {
         .map(|entry| entry.into_path())
         .collect()
 }
-
 
 // File Metadata Extraction
 #[derive(Debug)]
@@ -89,19 +88,24 @@ pub async fn move_file(metadata: &FileMetadata, target_dir: &PathBuf) -> io::Res
     Ok(())
 }
 
-pub async fn find_files_by_extension(base_dir: &str, extension: &str) -> Vec<PathBuf> {
-    WalkDir::new(base_dir)
-        .into_iter()
-        .filter_map(|entry| entry.ok())
-        .filter(|entry| {
-            entry.file_type().is_file() &&
-            entry.path().extension()
-                .and_then(|ext| ext.to_str())
-                .map(|ext| ext.eq_ignore_ascii_case(extension))
-                .unwrap_or(false)
-        })
-        .map(|entry| entry.into_path())
-        .collect()
+pub async fn find_files_by_extension(base_dir: &str, extension: &str) -> Vec<DirEntry> {
+    let files = WalkDir::new(base_dir).into_iter().filter_map(|f| f.ok());
+
+    let mut ext_files: Vec<DirEntry> = Vec::new();
+    for file in files {
+        if file.file_type().is_file() {
+            if file.path().display().to_string().ends_with(extension) {
+                ext_files.push(file);
+            }
+        }
+    }
+
+    println!("Files with {:} extension", extension);
+    for file in &ext_files {
+        println!("{:?}", file.file_name());
+    }
+
+    ext_files
 }
 
 pub async fn find_large_files(base_dir: &str, min_size_mb: u64) -> Vec<FileMetadata> {
@@ -124,8 +128,13 @@ pub async fn find_large_files(base_dir: &str, min_size_mb: u64) -> Vec<FileMetad
 // this ensutres is recorded with timestamp and content. output can
 // be directed to JSON logs or OpenTelemetry for further analysis.
 pub fn init_logging() {
-    let subscriber = FmtSubscriber::builder()
-        .with_max_level(tracing::Level::INFO)
-    .finish();
-    tracing::subscriber::set_global_default(subscriber).unwrap();
+    use std::sync::Once;
+    static INIT: Once = Once::new();
+    
+    INIT.call_once(|| {
+        let subscriber = FmtSubscriber::builder()
+            .with_max_level(tracing::Level::INFO)
+            .finish();
+        tracing::subscriber::set_global_default(subscriber).unwrap();
+    });
 }

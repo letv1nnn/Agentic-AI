@@ -42,22 +42,20 @@ pub async fn send_request(prompt: &str) -> Result<String, Box<dyn StdError>> {
     }
 
     Available functions:
-    - collect_files(base_dir: str) -> List files in directory, only files, not directories, in other cases call execute_command
     - get_file_metadata(path: str) -> Get file details or metadata or information about the file
     - route_file(file: FileMetadata) -> Determine where file should go
     - move_file(metadata: FileMetadata, target_dir: str) -> Move file
-    - execute_command(command: str) -> Execute shell command
+    - execute_command(command: str) -> Execute shell command, for instance: listing files, ...
     - find_files_by_extension(base_dir: str, extension: str) -> Find files by extension
     - find_large_files(base_dir: str, min_size: u64) -> Find large files
-
-    For file operations, always use absolute paths.
+    - ollama_again(prompt: &str) -> If you need to execute some command and then ask ollama again. If you call this function, put the prompt in the explanation section.
     "#;
 
     let messages = vec![
         ChatMessage {
             role: "system".to_string(),
             content: system_prompt.to_string(),
-        },
+        },  
         ChatMessage {
             role: "user".to_string(),
             content: prompt.to_string(),
@@ -128,4 +126,24 @@ pub async fn execute_command(command: &str) -> Result<String, Box<dyn StdError>>
     } else {
         Err(String::from_utf8(output.stderr)?.into())
     }
+}
+
+pub async fn shell_command_validation(command: &str) -> Result<(), Box<dyn StdError>> {
+    if command.trim().is_empty() {
+        return Err("Command cannot be empty".into());
+    }
+
+    if command.contains("rm -rf") || command.contains("sudo") {
+        println!("Warning: Command contains potentially dangerous operations.\nCommand: {:}", command);
+        println!("Are you sure you want to proceed? (yes/no)");
+        let mut confirmation = String::new();
+        std::io::stdin().read_line(&mut confirmation).expect("Failed to read line");
+        if confirmation.trim().to_lowercase() != "yes" {
+            return Err("Command execution cancelled by user".into());
+        } else {
+            println!("Proceeding with command execution...");
+        }
+    }
+
+    Ok(())
 }

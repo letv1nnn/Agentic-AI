@@ -1,7 +1,6 @@
 #![allow(unused)]
 
 use agent::tools::{collect_files, get_file_metadata, route_file, move_file, init_logging};
-use agent::tools_invocation;
 use agent::agent_core;
 
 // Agent's Responsibilities:
@@ -18,6 +17,7 @@ use agent::agent_core;
 
 #[tokio::main]
 async fn main() {
+    init_logging();
     take_input().await;
 }
 
@@ -62,7 +62,7 @@ pub async fn take_input() {
                 match output.status {
                     agent_core::AgentOutputStatus::Success => {
                         if let Some(msg) = output.message {
-                            println!("Success: {}", msg);
+                            println!("Success:\n{}", msg);
                         } else {
                             println!("Operation completed successfully");
                         }
@@ -84,7 +84,7 @@ pub async fn take_input() {
 
 fn print_help() {
     println!("LOCAL FILE MANAGER AGENT");
-    println!("This agent helps manage local files using natural language commands.");
+    println!("A smart local file management assistant that uses natural language processing (via Ollama) to organize and manage your files through human understadable commands.");
     println!("\nAvailable commands:");
     println!("  -query, -q   - Enter a natural language query");
     println!("  -help, -h    - Show this help message");
@@ -94,3 +94,4 @@ fn print_help() {
     println!("  \"Move all old files to Archive\"");
     println!("  \"List all large files (>100MB) in Downloads\"");
 }
+

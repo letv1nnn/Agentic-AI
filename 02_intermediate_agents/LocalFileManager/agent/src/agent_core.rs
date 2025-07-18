@@ -1,21 +1,24 @@
-use crate::tools::{collect_files, get_file_metadata, route_file, move_file, init_logging};
-use crate::tools_invocation;
+use crate::tools::{self, collect_files, get_file_metadata, route_file, move_file, init_logging};
 use std::path::PathBuf;
 use tracing::{info, error};
-use crate::ollama_integration::{self, ActionResponse, execute_command};
+use crate::ollama_integration::{self, ActionResponse, execute_command, shell_command_validation};
 
 pub enum AgentOutputStatus {
     Success,
     Failure(String),
 }
 
+#[derive(Debug, Clone)]
 pub struct AgentInput {
     pub query: String,
 }
 
+// probably need to add a boolean field with a status if the agent needs to request ollama again
+// it's perhaps gonna slow down my agent too much
 pub struct AgentOutput {
     pub status: AgentOutputStatus,
     pub message: Option<String>,
+    // pub ollama_again: bool,
 }
 
 pub struct LocalFileManagerAgent;
@@ -25,8 +28,6 @@ impl LocalFileManagerAgent {
         LocalFileManagerAgent
     }
     pub async fn handle_input(&self, input: AgentInput) -> AgentOutput {
-        init_logging();
-
         match ollama_integration::ollama_input_config(&input.query).await {
             Ok(action) => {
                 info!("Received action: {:?}", action);
@@ -49,12 +50,27 @@ impl LocalFileManagerAgent {
     }
     async fn execute_action(&self, action: ActionResponse) -> AgentOutput {
         match action.action.as_str() {
+            "ollama_again" => {
+                if let Some(prompt) = action.explanation {
+                    let input = AgentInput { query: prompt.to_string() };
+                    self.handle_input(input.clone());
+                    AgentOutput {
+                        status: AgentOutputStatus::Success,
+                        message: Some(format!("Executed prompt: {:?}", input)),
+                    }
+                } else {
+                    AgentOutput {
+                        status: AgentOutputStatus::Failure("Could not call ollama again!".to_string()),
+                        message: None,
+                    }
+                }
+            },
             "collect_files" => {
                 if let Some(base_dir) = action.parameters.get("base_dir") {
                     let files = collect_files(base_dir).await;
                     println!("Collected files:");
                     for file in &files {
-                        info!("  {}", file.file_name().expect("REASON").to_string_lossy());
+                        info!("  {}", file.file_name().expect("couldn't find a file name").to_string_lossy());
                     }
                     AgentOutput {
                         status: AgentOutputStatus::Success,
@@ -200,23 +216,32 @@ impl LocalFileManagerAgent {
                     }
                 }
             }
+            // Must to validate the command before executing.
             "execute_command" => {
-                if let Some(command) = action.parameters.get("command") {
-                    match execute_command(command).await {
-                        Ok(output) => AgentOutput {
-                            status: AgentOutputStatus::Success,
-                            message: Some(output),
-                        },
-                        Err(e) => AgentOutput {
-                            status: AgentOutputStatus::Failure(e.to_string()),
-                            message: None,
-                        },
-                    }
-                } else {
-                    AgentOutput {
-                        status: AgentOutputStatus::Failure("Missing command parameter".to_string()),
-                        message: None,
-                    }
+                match shell_command_validation(&action.action).await { 
+                    Ok(_) => {
+                        if let Some(command) = action.parameters.get("command") {
+                            match execute_command(command).await {
+                                Ok(output) => AgentOutput {
+                                    status: AgentOutputStatus::Success,
+                                    message: Some(output),
+                                },
+                                Err(e) => AgentOutput {
+                                    status: AgentOutputStatus::Failure(e.to_string()),
+                                    message: None,
+                                },
+                            }
+                        } else {
+                            AgentOutput {
+                                status: AgentOutputStatus::Failure("Missing command parameter".to_string()),
+                                message: None,
+                            }
+                        }
+                    },
+                    Err(e) => AgentOutput {
+                        status: AgentOutputStatus::Failure(e.to_string()),
+                        message: Some("Command validation failed".to_string()),
+                    },
                 }
             }
             _ => AgentOutput {
