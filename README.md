@@ -1,13 +1,4 @@
-# Building Agentic AI with Rust
-
-## Description
-This repository contains some AI Agents and the core of designing secure, high-performance autonomous agents and tool-using AI systems.
+# Agentic AI Architecture
 
 
-## Branches
-There are three directories with agents projects and an architecture of the agentic ai.
-
-- [Basic Agents](https://github.com/letv1nnn/Agentic-AI-with-Rust/tree/main/01_basic_agents)
-- [Intermediate Agents](https://github.com/letv1nnn/Agentic-AI-with-Rust/tree/main/02_intermediate_agents)
-- [Advanced Agents](https://github.com/letv1nnn/Agentic-AI-with-Rust/tree/main/03_advanced_agents)
-- [Agentic AI Architecture](https://github.com/letv1nnn/Agentic-AI-with-Rust/tree/main/agentic_ai_architecture)
+This repository contains some approaches and design patterns for building AI Systems. It serves as a notes that can be used in a real agents, patterns explores a lot of interesting topics such as Reactive programming, llm integration, deployment stages and integration of many technologies. 

@@ -1,9 +1,0 @@
-[package]
-name = "agent_run"
-version = "0.1.0"
-edition = "2024"
-
-[dependencies]
-ollama_config ={ path = "../ollama_config" }
-agent_core = { path = "../agent_core" }
-tokio = { version = "*", features = ["full"] }

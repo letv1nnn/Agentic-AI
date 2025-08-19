@@ -1,8 +1,0 @@
-[package]
-name = "secure_tool_functions"
-version = "0.1.0"
-edition = "2024"
-
-[dependencies]
-serde_json = { version = "*" }
-tokio = {version = "*", features = ["full"]}
