@@ -12,3 +12,7 @@ This repository contains some approaches and design patterns for building AI Sys
 - [***Tool-Using Agents***](https://github.com/letv1nnn/Agentic-AI-Architecture/tree/main/tool_using_agents) - some code that describes secure tool execution.
 
     It consists of three modules: ***"chaining tool-use"***, ***"safe system-level commands execution"*** and ***"secure tool functions"***. Basically, these modules contain the right design pattern to execute tools and make a pipeline execution.
+
+- [***Aotonomous Workflow Execution and Planning***](https://github.com/letv1nnn/Agentic-AI-Architecture/tree/main/autonomous_workflow_execution_and_planning) - this module focuses on building a planner that translates goals into sequenced, tool-based actions.
+
+    I've built a local planner that can take a high-level goal and generate a sequence of subgoals or tool steps, each of which can be executed and monitored. I've also implemented memory modules to persist context between steps, allowing the agent to recall prior state, manage dependencies, and resume failed plans. Then, I've explored techniques for decomposing goals into subtasks that can be executed concurrently or in sequence.
